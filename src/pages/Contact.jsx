@@ -1,40 +1,45 @@
-// Get your environment variable here. The process.env prefix depends on your setup.
-const WEB3FORMS_ACCESS_KEY = process.env.REACT_APP_WEB3FORMS_ACCESS_KEY;
-const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
+import React, { useState } from 'react';
+
+// Using import.meta.env for Vite projects
+const ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
 
 export const Contact = () => {
-  // Make the function async to use await for the fetch request
-  const handleFormSubmit = async (formData) => { 
-    // console.log(formData.entries());
-    const formInputData = Object.fromEntries(formData.entries());
+  const [result, setResult] = useState("");
+
+  const handleFormSubmit = async (event) => {
+    event.preventDefault(); 
+    setResult("Sending...");
     
-    // 1. Add the required access_key to the form data
-    const dataToSend = {
-      ...formInputData,
-      access_key: WEB3FORMS_ACCESS_KEY, 
-    };
+    if (!ACCESS_KEY) {
+        setResult("Error: Web3Forms Access Key is missing or not loaded.");
+        console.error("VITE_WEB3FORMS_ACCESS_KEY is not defined.");
+        return;
+    }
+
+    const form = event.target;
+    const formData = new FormData(form);
+
+    // CRITICAL: Must append the access key to the FormData
+    formData.append("access_key", ACCESS_KEY); 
 
     try {
-      // 2. Send the data to the Web3Forms API endpoint
-      const response = await fetch(WEB3FORMS_ENDPOINT, {
+      const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(dataToSend),
+        body: formData,
       });
 
-      const json = await response.json();
-
-      if (json.success) {
-        console.log("Form submitted successfully!");
-        // You might want to add code here to clear the form or show a success message to the user.
+      const data = await response.json();
+      
+      if (data.success) {
+        setResult("Form submitted successfully! 🎉 ");
+        form.reset(); 
       } else {
-        console.error("Submission failed:", json.message);
+        console.error("Web3Forms Error:", data); 
+        setResult(`Error: ${data.message || "Something went wrong."}`);
       }
     } catch (error) {
-      console.error("An error occurred during submission:", error);
+      console.error("Fetch Error:", error);
+      setResult("A network error occurred.");
     }
   };
 
@@ -43,12 +48,12 @@ export const Contact = () => {
       <h2 className="container-title">Contact Us</h2>
 
       <div className="contact-wrapper container">
-        <form action={handleFormSubmit}>
+        <form onSubmit={handleFormSubmit}> 
           <input
             type="text"
             className="form-control"
             placeholder="enter your name"
-            name="username"
+            name="username" 
             required
             autoComplete="off"
           />
@@ -56,8 +61,8 @@ export const Contact = () => {
           <input
             type="email"
             className="form-control"
-            placeholder="Enter you email"
-            name="email"
+            placeholder="Enter your email"
+            name="email" 
             required
             autoComplete="off"
           />
@@ -66,7 +71,7 @@ export const Contact = () => {
             className="form-control"
             rows="10"
             placeholder="Enter your message"
-            name="message"
+            name="message" 
             required
             autoComplete="off"
           ></textarea>
@@ -74,6 +79,10 @@ export const Contact = () => {
           <button type="submit" value="send">
             Send
           </button>
+          
+          {/* Status message placed immediately after the button */}
+          {result && <p className="form-submission-result">{result}</p>}
+
         </form>
       </div>
     </section>
