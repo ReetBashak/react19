@@ -48,24 +48,7 @@ Node.js (v18+) and npm or yarn installed.
 
 Git installed.
 
-Installation Steps
-Clone the Repository:
 
-Bash
-
-git clone <YOUR_GITHUB_REPO_URL>
-cd atlas
-Install Dependencies:
-
-Bash
-
-npm install
-Run the Project:
-
-Bash
-
-npm run dev 
-The application will typically open in your browser at http://localhost:5173 (or similar, depending on your setup).
 
 
 Project Link: https://reet-country.netlify.app/
